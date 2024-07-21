@@ -37,24 +37,19 @@ function App() {
     });
 
     socket.on("rollDiceClient", (newCurrentScore, diceUrl) => {
-      console.log("Rolling Dice Client");
       setCurrentScore(() => newCurrentScore);
       setSrc(diceUrl);
     });
 
     socket.on("switchPlayerClient", () => {
-      console.log("Switching Player Client");
       switchPlayer();
     });
 
     socket.on("holdPlayerClient", (newScores) => {
-      console.log("holding Player Client");
-
       setScores(() => newScores);
     });
 
     socket.on("winPlayerClient", (winner) => {
-      console.log("Winning Player Client");
       setWin(winner);
       setPlaying(false);
     });
@@ -65,13 +60,10 @@ function App() {
   }, []);
 
   function switchPlayer() {
-    setCurrentScore((currentScore) => ({
-      ...currentScore,
-      [activePlayer]: 0,
-    }));
     setActivePlayer((prevActivePlayer) =>
       prevActivePlayer ? 0 : 1
     );
+    setCurrentScore(() => [0, 0]);
   }
 
   function handleRollDice() {
@@ -90,6 +82,7 @@ function App() {
       });
     } else {
       // Switch to next player
+      socket.emit("rollDice", currentScore, `dice-1.png`, id);
       switchPlayer();
       socket.emit("switchPlayer", id);
     }
