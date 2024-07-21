@@ -17,10 +17,15 @@ const io = require("socket.io")(server, {
   },
 });
 
+let playerCount = 0;
+
 io.on("connection", (socket) => {
   socket.on("setup", (roomId) => {
+    playerCount++;
     socket.join(roomId);
-    console.log(`User ${socket.id} Joined in Room ${roomId}`);
+    console.log(
+      `User ${socket.id} Joined in Room ${roomId} -- New Player Count is ${playerCount}`
+    );
     socket.emit("connected");
   });
 
@@ -47,6 +52,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log(`Player Disconnected`);
+    playerCount--;
+    console.log(`Player disconnected - Count is ${playerCount}`);
   });
 });

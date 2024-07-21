@@ -30,7 +30,7 @@ function App() {
     }
 
     socket = io(ENDPOINT);
-    socket.emit("setup", key ? key : id);
+    socket.emit("setup", key ? String(key) : id);
 
     socket.on("connected", () => {
       console.log(`Connected from server - socket`);
@@ -62,10 +62,6 @@ function App() {
     socket.on("newGameClient", () => {
       init();
     });
-
-    return () => {
-      socket.disconnect();
-    };
   }, []);
 
   function switchPlayer() {
@@ -76,11 +72,6 @@ function App() {
     setActivePlayer((prevActivePlayer) =>
       prevActivePlayer ? 0 : 1
     );
-  }
-
-  function switchPlayerClientAndServer() {
-    switchPlayer();
-    socket.emit("switchPlayer", id);
   }
 
   function handleRollDice() {
@@ -99,7 +90,8 @@ function App() {
       });
     } else {
       // Switch to next player
-      switchPlayerClientAndServer();
+      switchPlayer();
+      socket.emit("switchPlayer", id);
     }
   }
 
@@ -114,12 +106,13 @@ function App() {
 
       socket.emit("holdPlayer", id, newScores);
 
-      if (newScores[activePlayer] >= 10) {
+      if (newScores[activePlayer] >= 100) {
         setPlaying(false);
         setWin(() => activePlayer);
         socket.emit("winPlayer", id, activePlayer);
       } else {
-        switchPlayerClientAndServer();
+        switchPlayer();
+        socket.emit("switchPlayer", id);
       }
 
       return newScores;
