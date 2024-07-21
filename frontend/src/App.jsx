@@ -57,6 +57,10 @@ function App() {
     socket.on("newGameClient", () => {
       init();
     });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   function switchPlayer() {
