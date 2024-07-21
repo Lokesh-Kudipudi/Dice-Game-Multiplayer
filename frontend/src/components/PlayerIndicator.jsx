@@ -1,6 +1,6 @@
 function PlayerIndicator({ playerNumber }) {
   return (
-    <p className="playerIndicator">
+    <p className="indicator">
       Your playing as number - {playerNumber}
     </p>
   );

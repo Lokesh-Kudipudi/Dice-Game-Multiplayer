@@ -5,18 +5,21 @@ import CurrentScore from "./components/CurrentScore";
 import Section from "./components/Section";
 import Dice from "./components/Dice";
 import io from "socket.io-client";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import PlayerIndicator from "./components/PlayerIndicator";
+import WaitingIndicator from "./components/WaitingIndicator";
 
 const ENDPOINT = "http://localhost:3000";
 let socket;
 
 function App() {
+  const [waiting, setWaiting] = useState(true);
+  const [playerCount, setPlayerCount] = useState(0);
   const [playerNumber, setPlayerNumber] = useState(-1);
   const [scores, setScores] = useState([0, 0]);
   const [currentScore, setCurrentScore] = useState([0, 0]);
   const [activePlayer, setActivePlayer] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(false);
   const [src, setSrc] = useState(`dice-1.png`);
   const [win, setWin] = useState(2);
   const navigate = useNavigate();
@@ -34,8 +37,20 @@ function App() {
     socket.emit("setup", key ? String(key) : id);
 
     socket.on("connected", (playerNo) => {
-      console.log(`Connected from server - socket`);
-      setPlayerNumber(() => playerNo);
+      setPlayerNumber(() => {
+        if (playerNo + 1 === 2) {
+          setWaiting(false);
+          setPlaying(true);
+        }
+        return playerNo;
+      });
+    });
+
+    socket.on("newConnectionClient", (playerCount) => {
+      if (playerCount + 1 === 2) {
+        setWaiting(false);
+        setPlaying(true);
+      }
     });
 
     socket.on("rollDiceClient", (newCurrentScore, diceUrl) => {
@@ -140,6 +155,17 @@ function App() {
         gap: "12px",
       }}
     >
+      {waiting && (
+        <WaitingIndicator>
+          <p>Waiting for other player -- </p>
+          <Link
+            target="_blank"
+            to={`http://localhost:5173/${id}`}
+          >
+            Invite Link
+          </Link>
+        </WaitingIndicator>
+      )}
       <PlayerIndicator
         playerNumber={playerNumber}
       ></PlayerIndicator>
@@ -178,7 +204,9 @@ function App() {
         <>
           <button
             onClick={handleRollDice}
-            className="btn btn--roll"
+            className={`btn btn--roll ${
+              playing ? "" : "hidden"
+            }`}
             disabled={activePlayer !== playerNumber}
           >
             🎲 Roll dice
@@ -186,7 +214,9 @@ function App() {
           <button
             disabled={activePlayer !== playerNumber}
             onClick={handleHold}
-            className="btn btn--hold"
+            className={`btn btn--hold ${
+              playing ? "" : "hidden"
+            }`}
           >
             📥 Hold
           </button>

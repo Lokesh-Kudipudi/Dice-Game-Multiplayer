@@ -27,6 +27,7 @@ io.on("connection", (socket) => {
       `User ${socket.id} Joined in Room ${roomId} -- New Player Count is ${playerCount}`
     );
     socket.emit("connected", playerCount);
+    socket.in(roomId).emit("newConnectionClient", playerCount);
   });
 
   socket.on("rollDice", (newCurrentScore, diceUrl, id) => {
