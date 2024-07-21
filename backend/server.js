@@ -17,7 +17,7 @@ const io = require("socket.io")(server, {
   },
 });
 
-let playerCount = 0;
+let playerCount = -1;
 
 io.on("connection", (socket) => {
   socket.on("setup", (roomId) => {
@@ -26,7 +26,7 @@ io.on("connection", (socket) => {
     console.log(
       `User ${socket.id} Joined in Room ${roomId} -- New Player Count is ${playerCount}`
     );
-    socket.emit("connected");
+    socket.emit("connected", playerCount);
   });
 
   socket.on("rollDice", (newCurrentScore, diceUrl, id) => {

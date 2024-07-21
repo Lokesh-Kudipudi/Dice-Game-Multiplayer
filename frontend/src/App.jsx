@@ -12,6 +12,7 @@ const ENDPOINT = "http://localhost:3000";
 let socket;
 
 function App() {
+  const [playerNumber, setPlayerNumber] = useState(-1);
   const [scores, setScores] = useState([0, 0]);
   const [currentScore, setCurrentScore] = useState([0, 0]);
   const [activePlayer, setActivePlayer] = useState(0);
@@ -32,8 +33,9 @@ function App() {
     socket = io(ENDPOINT);
     socket.emit("setup", key ? String(key) : id);
 
-    socket.on("connected", () => {
+    socket.on("connected", (playerNo) => {
       console.log(`Connected from server - socket`);
+      setPlayerNumber(() => playerNo);
     });
 
     socket.on("rollDiceClient", (newCurrentScore, diceUrl) => {
@@ -138,7 +140,9 @@ function App() {
         gap: "12px",
       }}
     >
-      <PlayerIndicator playerNumber={0}></PlayerIndicator>
+      <PlayerIndicator
+        playerNumber={playerNumber}
+      ></PlayerIndicator>
       <main>
         <Section
           activePlayer={activePlayer}
@@ -175,10 +179,15 @@ function App() {
           <button
             onClick={handleRollDice}
             className="btn btn--roll"
+            disabled={activePlayer !== playerNumber}
           >
             🎲 Roll dice
           </button>
-          <button onClick={handleHold} className="btn btn--hold">
+          <button
+            disabled={activePlayer !== playerNumber}
+            onClick={handleHold}
+            className="btn btn--hold"
+          >
             📥 Hold
           </button>
         </>
